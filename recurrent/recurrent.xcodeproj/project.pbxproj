@@ -11,7 +11,6 @@
 		5B6EFCEF1A98CEF700AE6E33 /* RNNNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6EFCEE1A98CEF700AE6E33 /* RNNNetwork.swift */; };
 		5B6EFCF11A98CEFF00AE6E33 /* RNNNeuron.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6EFCF01A98CEFF00AE6E33 /* RNNNeuron.swift */; };
 		5B6EFCF31A98CF1500AE6E33 /* RNNInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6EFCF21A98CF1500AE6E33 /* RNNInstance.swift */; };
-		5B6EFCFD1A98CF6800AE6E33 /* RecurrentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6EFCFC1A98CF6800AE6E33 /* RecurrentTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,20 +31,10 @@
 		5B6EFCEE1A98CEF700AE6E33 /* RNNNetwork.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RNNNetwork.swift; sourceTree = "<group>"; };
 		5B6EFCF01A98CEFF00AE6E33 /* RNNNeuron.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RNNNeuron.swift; sourceTree = "<group>"; };
 		5B6EFCF21A98CF1500AE6E33 /* RNNInstance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RNNInstance.swift; sourceTree = "<group>"; };
-		5B6EFCF81A98CF6800AE6E33 /* RecurrentTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RecurrentTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		5B6EFCFB1A98CF6800AE6E33 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		5B6EFCFC1A98CF6800AE6E33 /* RecurrentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrentTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		5B6EFCE01A98CEAB00AE6E33 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		5B6EFCF51A98CF6800AE6E33 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -59,7 +48,6 @@
 			isa = PBXGroup;
 			children = (
 				5B6EFCE51A98CEAB00AE6E33 /* recurrent */,
-				5B6EFCF91A98CF6800AE6E33 /* RecurrentTests */,
 				5B6EFCE41A98CEAB00AE6E33 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -68,7 +56,6 @@
 			isa = PBXGroup;
 			children = (
 				5B6EFCE31A98CEAB00AE6E33 /* recurrent */,
-				5B6EFCF81A98CF6800AE6E33 /* RecurrentTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -82,23 +69,6 @@
 				5B6EFCF21A98CF1500AE6E33 /* RNNInstance.swift */,
 			);
 			path = recurrent;
-			sourceTree = "<group>";
-		};
-		5B6EFCF91A98CF6800AE6E33 /* RecurrentTests */ = {
-			isa = PBXGroup;
-			children = (
-				5B6EFCFC1A98CF6800AE6E33 /* RecurrentTests.swift */,
-				5B6EFCFA1A98CF6800AE6E33 /* Supporting Files */,
-			);
-			path = RecurrentTests;
-			sourceTree = "<group>";
-		};
-		5B6EFCFA1A98CF6800AE6E33 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				5B6EFCFB1A98CF6800AE6E33 /* Info.plist */,
-			);
-			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -121,23 +91,6 @@
 			productReference = 5B6EFCE31A98CEAB00AE6E33 /* recurrent */;
 			productType = "com.apple.product-type.tool";
 		};
-		5B6EFCF71A98CF6800AE6E33 /* RecurrentTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 5B6EFCFE1A98CF6800AE6E33 /* Build configuration list for PBXNativeTarget "RecurrentTests" */;
-			buildPhases = (
-				5B6EFCF41A98CF6800AE6E33 /* Sources */,
-				5B6EFCF51A98CF6800AE6E33 /* Frameworks */,
-				5B6EFCF61A98CF6800AE6E33 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = RecurrentTests;
-			productName = RecurrentTests;
-			productReference = 5B6EFCF81A98CF6800AE6E33 /* RecurrentTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -148,9 +101,6 @@
 				ORGANIZATIONNAME = "Runemark Studios";
 				TargetAttributes = {
 					5B6EFCE21A98CEAB00AE6E33 = {
-						CreatedOnToolsVersion = 6.3;
-					};
-					5B6EFCF71A98CF6800AE6E33 = {
 						CreatedOnToolsVersion = 6.3;
 					};
 				};
@@ -168,20 +118,9 @@
 			projectRoot = "";
 			targets = (
 				5B6EFCE21A98CEAB00AE6E33 /* recurrent */,
-				5B6EFCF71A98CF6800AE6E33 /* RecurrentTests */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		5B6EFCF61A98CF6800AE6E33 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5B6EFCDF1A98CEAB00AE6E33 /* Sources */ = {
@@ -192,14 +131,6 @@
 				5B6EFCEF1A98CEF700AE6E33 /* RNNNetwork.swift in Sources */,
 				5B6EFCF11A98CEFF00AE6E33 /* RNNNeuron.swift in Sources */,
 				5B6EFCF31A98CF1500AE6E33 /* RNNInstance.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		5B6EFCF41A98CF6800AE6E33 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				5B6EFCFD1A98CF6800AE6E33 /* RecurrentTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -296,38 +227,6 @@
 			};
 			name = Release;
 		};
-		5B6EFCFF1A98CF6800AE6E33 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-					"$(inherited)",
-				);
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = RecurrentTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		5B6EFD001A98CF6800AE6E33 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = RecurrentTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -347,14 +246,7 @@
 				5B6EFCEC1A98CEAB00AE6E33 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-		};
-		5B6EFCFE1A98CF6800AE6E33 /* Build configuration list for PBXNativeTarget "RecurrentTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				5B6EFCFF1A98CF6800AE6E33 /* Debug */,
-				5B6EFD001A98CF6800AE6E33 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

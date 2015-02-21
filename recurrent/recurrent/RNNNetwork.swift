@@ -24,7 +24,7 @@ extension String {
     }
 }
 
-class RNNNetwork
+public class RNNNetwork
 {
     var foldedNeurons = [RNNNeuron]()
     var foldedWeights = [Int:[Int:[RNNDelayedWeight]]]()
@@ -37,7 +37,7 @@ class RNNNetwork
     var deltas = [Double]()
     var weightDeltas = [Int:[Int:Double]]()
     
-    init(neuronString:String, weightStrings:[String])
+    public init(neuronString:String, weightStrings:[String])
     {
         // Neuron String Format: number of nodes on each layer, separated by a colon "2:3:4:2"
         // Weight String Format: ["0-1|0.12:1", "1-1|0.5:0"]
