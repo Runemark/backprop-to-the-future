@@ -66,14 +66,14 @@ public class RNNNetwork
                         neuronType = .Output
                     }
                     
-                    addNeuronToFoldedNetwork(foldedNeuronIndexCount, unfoldedIndex:foldedNeuronIndexCount, type:neuronType)
+                    addNeuronToFoldedNetwork(foldedNeuronIndexCount, unfoldedIndex:foldedNeuronIndexCount, ioIndex:0, type:neuronType)
                     foldedNeuronIndexCount++
                 }
                 
                 // Add bias weights to all layers except ouput
                 if (index < layers.count-1)
                 {
-                    addNeuronToFoldedNetwork(foldedNeuronIndexCount, unfoldedIndex:foldedNeuronIndexCount, type:.Bias)
+                    addNeuronToFoldedNetwork(foldedNeuronIndexCount, unfoldedIndex:foldedNeuronIndexCount, ioIndex:0, type:.Bias)
                     foldedNeuronIndexCount++
                 }
             }
@@ -107,6 +107,10 @@ public class RNNNetwork
         numberOfBlocks = k+1
         
         self.populateUnfoldedNetwork(k)
+        self.populateTrainingStructures()
+        
+        self.trainNetworkOnInstance(RNNInstance(output:[1.0], inputs:[[1.0], [0.0]]))
+        println("doot")
     }
     
     // k = max depth (number of blocks - 1)
@@ -116,6 +120,8 @@ public class RNNNetwork
         // First, populate the neurons of the unfolded network by repeating the nodes from the folded network
         for blockIndex in reverse(0...k)
         {
+            var inputIndex:Int = 0
+            var outputIndex:Int = 0
             // iterate through all neurons and append them to the unfolded network at that block
             for foldedNeuron in foldedNeurons
             {
@@ -123,7 +129,29 @@ public class RNNNetwork
                 let neuronType = foldedNeuron.type
                 let unfoldedIndex = (k-blockIndex)*foldedNeurons.count + foldedIndex
                 
-                self.addNeuronToUnfoldedNetwork(foldedIndex, unfoldedIndex:unfoldedIndex, k:blockIndex, type:neuronType)
+                var ioIndex:Int = 0
+                
+                switch neuronType
+                {
+                case .Input:
+                    ioIndex = inputIndex
+                case .Output:
+                    ioIndex = outputIndex
+                default:
+                    ioIndex = 0
+                }
+                
+                self.addNeuronToUnfoldedNetwork(foldedIndex, unfoldedIndex:unfoldedIndex, ioIndex:ioIndex, k:blockIndex, type:neuronType)
+                
+                switch neuronType
+                {
+                case .Input:
+                    inputIndex++
+                case .Output:
+                    outputIndex++
+                default:
+                    break
+                }
             }
         }
         
@@ -150,24 +178,34 @@ public class RNNNetwork
         }
     }
     
+    func populateTrainingStructures()
+    {
+        for _ in 0..<unfoldedNeurons.count
+        {
+            outputs.append(0.0)
+            deltas.append(0.0)
+        }
+    }
+    
     //////////////////////////////
     // Modification
     //////////////////////////////
     
-    func addNeuronToUnfoldedNetwork(foldedIndex:Int, unfoldedIndex:Int, k:Int, type:NeuronType)
+    func addNeuronToUnfoldedNetwork(foldedIndex:Int, unfoldedIndex:Int, ioIndex:Int, k:Int, type:NeuronType)
     {
-        self.addNeuronToUnfoldedNetwork(RNNNeuron(foldedIndex:foldedIndex, unfoldedIndex:unfoldedIndex, k:k, type:type))
+        self.addNeuronToUnfoldedNetwork(RNNNeuron(foldedIndex:foldedIndex, unfoldedIndex:unfoldedIndex, ioIndex:ioIndex, k:k, type:type))
     }
     
     func addNeuronToUnfoldedNetwork(neuron:RNNNeuron)
     {
         unfoldedNeurons.append(neuron)
         unfoldedWeights[neuron.unfoldedIndex] = [Int:Double]()
+        weightDeltas[neuron.unfoldedIndex] = [Int:Double]()
     }
     
-    func addNeuronToFoldedNetwork(foldedIndex:Int, unfoldedIndex:Int, type:NeuronType)
+    func addNeuronToFoldedNetwork(foldedIndex:Int, unfoldedIndex:Int, ioIndex:Int, type:NeuronType)
     {
-        self.addNeuronToFoldedNetwork(RNNNeuron(foldedIndex:foldedIndex, unfoldedIndex:unfoldedIndex, k:0, type:type))
+        self.addNeuronToFoldedNetwork(RNNNeuron(foldedIndex:foldedIndex, unfoldedIndex:unfoldedIndex, ioIndex:ioIndex, k:0, type:type))
     }
     
     func addNeuronToFoldedNetwork(neuron:RNNNeuron)
@@ -199,11 +237,16 @@ public class RNNNetwork
         if let weightsFromStart:[Int:Double] = unfoldedWeights[startIndex]
         {
             unfoldedWeights[startIndex]![endIndex] = value
+            
+            weightDeltas[startIndex]![endIndex] = 0.0
         }
         else
         {
             unfoldedWeights[startIndex] = [Int:Double]()
             unfoldedWeights[startIndex]![endIndex] = value
+            
+            weightDeltas[startIndex] = [Int:Double]()
+            weightDeltas[startIndex]![endIndex] = 0.0
         }
     }
     
@@ -237,9 +280,46 @@ public class RNNNetwork
         return maxDelay
     }
     
+    func neuronsConnectedToNeuron(unfoldedIndex:Int) -> [Int]
+    {
+        var neuronIndexes = [Int]()
+        
+        for (fromNeuronIndex:Int, weightsFromA:[Int:Double]) in unfoldedWeights
+        {
+            if let weight = weightsFromA[unfoldedIndex]
+            {
+                neuronIndexes.append(fromNeuronIndex)
+            }
+        }
+        
+        return neuronIndexes
+    }
+    
+    func neuronsConnectedFromNeuron(unfoldedIndex:Int) -> [Int]
+    {
+        var neuronIndexes = [Int]()
+        
+        if let connectedNeurons:[Int:Double] = unfoldedWeights[unfoldedIndex]
+        {
+            for (toNeuronIndex:Int, weight:Double) in connectedNeurons
+            {
+                neuronIndexes.append(toNeuronIndex)
+            }
+        }
+        
+        return neuronIndexes
+    }
+    
     //////////////////////////////
     // Training
     //////////////////////////////
+    
+    func trainNetworkOnInstance(instance:RNNInstance)
+    {
+        self.calculateOutputs(instance)
+        self.calculateDeltas(instance)
+        self.calculateWeightDeltas()
+    }
     
     func calculateOutputs(instance:RNNInstance)
     {
@@ -248,21 +328,91 @@ public class RNNNetwork
             var output:Double = 0.0
             switch neuron.type
             {
+                
+            // Bias Neuron
             case .Bias:
                 output = 1.0
+            // Input Neuron
             case .Input:
-                // Relies on the fact that the input nodes come first in the block
-                // And thus can be accessed via the abstractIndex
                 output = instance.inputs[neuron.k][neuron.foldedIndex]
+            // Output, Hidden Neuron
             default:
                 
-                output = 1.0
+                var net:Double = 0.0
+                
+                let endIndex = neuron.unfoldedIndex
+                for startIndex:Int in self.neuronsConnectedToNeuron(endIndex)
+                {
+                    if let w:Double = unfoldedWeights[startIndex]![endIndex]
+                    {
+                        let o:Double = outputs[startIndex]
+                        net += w*o
+                    }
+                }
+                
+                output = net
+            }
+            
+            outputs[neuron.unfoldedIndex] = self.sigmoidActivation(output)
+        }
+    }
+    
+    func calculateDeltas(instance:RNNInstance)
+    {
+        for neuron in reverse(unfoldedNeurons)
+        {
+            var delta:Double = 0.0
+            let output_j:Double = outputs[neuron.unfoldedIndex]
+            
+            switch neuron.type
+            {
+                
+                // Bias Neuron
+            case .Bias:
+                delta = 0.0
+                // Input Neuron
+            case .Input:
+                delta = 0.0
+                // Output Neuron
+            case .Output:
+                delta = (instance.output[neuron.ioIndex] - output_j)*output_j*(1-output_j)
+                // Hidden Neuron
+            default:
+                var summedDelta:Double = 0
+                var connectedNeuronIndexes = self.neuronsConnectedFromNeuron(neuron.unfoldedIndex)
+                
+                for toIndex:Int in connectedNeuronIndexes
+                {
+                    // get the relevant weight
+                    var weight:Double = unfoldedWeights[neuron.unfoldedIndex]![toIndex]!
+                    var upperDelta:Double = deltas[toIndex]
+                    
+                    summedDelta += upperDelta*weight
+                }
+                
+                delta = summedDelta*output_j*(1-output_j)
+            }
+            
+            deltas[neuron.unfoldedIndex] = delta
+        }
+    }
+    
+    func calculateWeightDeltas()
+    {
+        // C*Oa*Db
+        for (startIndex:Int, weightsFromA:[Int:Double]) in unfoldedWeights
+        {
+            for (endIndex:Int, weight_ab:Double) in unfoldedWeights[startIndex]!
+            {
+                let output_a = outputs[startIndex]
+                
+                weightDeltas[startIndex]![endIndex] = output_a*weight_ab
             }
         }
     }
     
-    func sigmoidActivation()
+    func sigmoidActivation(net:Double) -> Double
     {
-        
+        return 1.0/Double(1 + pow(Double(M_E), -1*net))
     }
 }
