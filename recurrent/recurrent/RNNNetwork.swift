@@ -32,6 +32,8 @@ public class RNNNetwork
     var unfoldedNeurons = [RNNNeuron]()
     var unfoldedWeights = [Int:[Int:Double]]()
     
+    var numberOfBlocks = 0
+    
     // Training
     var outputs = [Double]()
     var deltas = [Double]()
@@ -43,7 +45,7 @@ public class RNNNetwork
         // Weight String Format: ["0-1|0.12:1", "1-1|0.5:0"]
         
         ////////////////////////////////////////////////////////////
-        // First, populate the "folded" (abstract) network (foldedNeurons, foldedWeights)
+        // Populate the folded network (foldedNeurons, foldedWeights)
         let layers:[String] = neuronString.componentsSeparatedByString(":")
         var foldedNeuronIndexCount = 0
         
@@ -100,21 +102,72 @@ public class RNNNetwork
         }
         
         ////////////////////////////////////////////////////////////
-        // Second, unfold the network (unfoldedNeurons, unfoldedWeights)
+        // Populate the unfolded network (unfoldedNeurons, unfoldedWeights)
+        let k = self.maxFoldedWeightDelay()
+        numberOfBlocks = k+1
+        
+        self.populateUnfoldedNetwork(k)
     }
     
-    func unfoldNetwork()
+    // k = max depth (number of blocks - 1)
+    func populateUnfoldedNetwork(k:Int)
     {
+        ////////////////////////////////////////////////////////////
+        // First, populate the neurons of the unfolded network by repeating the nodes from the folded network
+        for blockIndex in reverse(0...k)
+        {
+            // iterate through all neurons and append them to the unfolded network at that block
+            for foldedNeuron in foldedNeurons
+            {
+                let foldedIndex = foldedNeuron.foldedIndex
+                let neuronType = foldedNeuron.type
+                let unfoldedIndex = (k-blockIndex)*foldedNeurons.count + foldedIndex
+                
+                self.addNeuronToUnfoldedNetwork(foldedIndex, unfoldedIndex:unfoldedIndex, k:blockIndex, type:neuronType)
+            }
+        }
         
+        ////////////////////////////////////////////////////////////
+        // Second, assign weights in the unfolded network temporally, taking into account the delay of the folded weights
+        for (fromFoldedIndex:Int, delayedWeightsFromA:[Int:[RNNDelayedWeight]]) in foldedWeights
+        {
+            for (toFoldedIndex:Int, delayedWeightsFromAToB:[RNNDelayedWeight]) in delayedWeightsFromA
+            {
+                for delayedWeight:RNNDelayedWeight in delayedWeightsFromAToB
+                {
+                    let delay = delayedWeight.delay
+                    
+                    for endBlockIndex in 0...(k-delay)
+                    {
+                        let startBlockIndex = endBlockIndex+delay
+                        let fromUnfoldedIndex = self.unfoldedIndexForFoldedIndex(fromFoldedIndex, blockIndex:startBlockIndex)
+                        let toUnfoldedIndex = self.unfoldedIndexForFoldedIndex(toFoldedIndex, blockIndex:endBlockIndex)
+                        
+                        self.addUnfoldedWeight(fromUnfoldedIndex, endIndex:toUnfoldedIndex, value:delayedWeight.value)
+                    }
+                }
+            }
+        }
     }
     
     //////////////////////////////
     // Modification
     //////////////////////////////
     
+    func addNeuronToUnfoldedNetwork(foldedIndex:Int, unfoldedIndex:Int, k:Int, type:NeuronType)
+    {
+        self.addNeuronToUnfoldedNetwork(RNNNeuron(foldedIndex:foldedIndex, unfoldedIndex:unfoldedIndex, k:k, type:type))
+    }
+    
+    func addNeuronToUnfoldedNetwork(neuron:RNNNeuron)
+    {
+        unfoldedNeurons.append(neuron)
+        unfoldedWeights[neuron.unfoldedIndex] = [Int:Double]()
+    }
+    
     func addNeuronToFoldedNetwork(foldedIndex:Int, unfoldedIndex:Int, type:NeuronType)
     {
-        self.addNeuronToFoldedNetwork(RNNNeuron(foldedIndex:foldedIndex, unfoldedIndex:unfoldedIndex, k:1, type:type))
+        self.addNeuronToFoldedNetwork(RNNNeuron(foldedIndex:foldedIndex, unfoldedIndex:unfoldedIndex, k:0, type:type))
     }
     
     func addNeuronToFoldedNetwork(neuron:RNNNeuron)
@@ -141,9 +194,27 @@ public class RNNNetwork
         }
     }
     
+    func addUnfoldedWeight(startIndex:Int, endIndex:Int, value:Double)
+    {
+        if let weightsFromStart:[Int:Double] = unfoldedWeights[startIndex]
+        {
+            unfoldedWeights[startIndex]![endIndex] = value
+        }
+        else
+        {
+            unfoldedWeights[startIndex] = [Int:Double]()
+            unfoldedWeights[startIndex]![endIndex] = value
+        }
+    }
+    
     //////////////////////////////
     // Information
     //////////////////////////////
+    
+    func unfoldedIndexForFoldedIndex(foldedIndex:Int, blockIndex:Int) -> Int
+    {
+        return ((numberOfBlocks - 1 - blockIndex)*foldedNeurons.count)+foldedIndex
+    }
     
     func maxFoldedWeightDelay() -> Int
     {
@@ -187,7 +258,6 @@ public class RNNNetwork
                 
                 output = 1.0
             }
-            [neuron.unfoldedIndex]
         }
     }
     
