@@ -108,9 +108,6 @@ public class RNNNetwork
         
         self.populateUnfoldedNetwork(k)
         self.populateTrainingStructures()
-        
-        self.trainNetworkOnInstance(RNNInstance(output:[1.0], inputs:[[1.0], [0.0]]))
-        println("doot")
     }
     
     // k = max depth (number of blocks - 1)
@@ -313,6 +310,22 @@ public class RNNNetwork
     //////////////////////////////
     // Training
     //////////////////////////////
+    
+    func trainNetworkOnDataset(dataset:[RNNInstance])
+    {
+        var epochs:Int = 0
+        var totalInstancesTrained:Int = 0
+        
+        for instance in dataset
+        {
+            self.trainNetworkOnInstance(instance)
+            totalInstancesTrained++
+            
+            println("instances trained: \(totalInstancesTrained)")
+        }
+        
+        epochs++
+    }
     
     func trainNetworkOnInstance(instance:RNNInstance)
     {
