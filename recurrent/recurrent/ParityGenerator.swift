@@ -10,6 +10,7 @@ import Foundation
 
 class ParityGenerator
 {
+    // Parity
     func generateInstances(dataSetSize:Int, desiredParity:[Int]) -> [RNNInstance]
     {
         var dataSet = [RNNInstance]()
