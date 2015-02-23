@@ -336,22 +336,43 @@ public class RNNNetwork
     // Training
     //////////////////////////////
     
-    func trainNetworkOnDataset(dataset:[RNNInstance])
+    func trainNetworkOnDataset(trainingSet:[RNNInstance], testSet:[RNNInstance]) -> [Double]
     {
-        var epochs:Int = 0
-        var totalInstancesTrained:Int = 0
+        var accuracyOverTime = [Double]()
         
-        for instance in dataset
+        var epochs = 0
+        var previousAccuracy = 0.0
+        var epochsSinceLastAccuracyChange = 0
+        var noChangeToleranceThreshold = 200
+        var totalEpochsThreshold = 1000
+        
+        // Terminate if stopping conditions are met (too long without change, total epoch exceeds bounds, already at 100% accuracy)
+        while (epochsSinceLastAccuracyChange < noChangeToleranceThreshold && epochs < totalEpochsThreshold && previousAccuracy < 1.0)
         {
-            self.trainNetworkOnInstance(instance)
-            totalInstancesTrained++
-
-            println("unfoldedWeights: \(unfoldedWeights[0]![2])")
+            var totalInstancesTrained:Int = 0
+            
+            for instance in trainingSet
+            {
+                self.trainNetworkOnInstance(instance)
+                totalInstancesTrained++
+            }
+            
+            var accuracy = self.classificationAccuracy(testSet)
+            accuracyOverTime.append(accuracy)
+            
+            if (accuracy == previousAccuracy)
+            {
+                epochsSinceLastAccuracyChange++
+            }
+            else
+            {
+                epochsSinceLastAccuracyChange = 0
+            }
+            
+            epochs++
         }
         
-        epochs++
-        
-        println("epoch complete")
+        return accuracyOverTime
     }
     
     func trainNetworkOnInstance(instance:RNNInstance)
@@ -453,10 +474,7 @@ public class RNNNetwork
             }
         }
     }
-    
-    // Alternative - store the foldedWeightIndex (0...n) at the beginning
-    
-    // O(F
+
     func applyWeightChanges()
     {
         for (fromFoldedIndex:Int, delayedWeightsFromA:[Int:[RNNDelayedWeight]]) in foldedWeights
@@ -490,5 +508,108 @@ public class RNNNetwork
     func sigmoidActivation(net:Double) -> Double
     {
         return 1.0/Double(1 + pow(Double(M_E), -1*net))
+    }
+    
+    //////////////////////////////
+    // Test
+    //////////////////////////////
+    
+    func classificationAccuracy(testSet:[RNNInstance]) -> Double
+    {
+        var instanceCount:Int = 0
+        var correctClassificationCount:Int = 0
+        
+        for testInstance in testSet
+        {
+            if (self.testNetworkOnInstance(testInstance))
+            {
+                correctClassificationCount++
+            }
+            instanceCount++
+        }
+        
+        return Double(correctClassificationCount)/Double(instanceCount)
+    }
+    
+    // Pass or Fail
+    func testNetworkOnInstance(instance:RNNInstance) -> Bool
+    {
+        let actualOutputs:[Double] = self.outputsFromNetworkOnInstance(instance)
+        let expectedOutputs:[Double] = instance.output
+        
+        var correctClassification = true
+        
+        if (actualOutputs.count == expectedOutputs.count)
+        {
+            for index in 0..<actualOutputs.count
+            {
+                if (self.classificationOutput(actualOutputs[index]) != expectedOutputs[index])
+                {
+                    correctClassification = false
+                    break
+                }
+            }
+        }
+        
+        return correctClassification
+    }
+    
+    func classificationOutput(output:Double) -> Double
+    {
+        var classificationOutput:Double = 0.0
+        
+        if (output > 0.5)
+        {
+            classificationOutput = 1.0
+        }
+        
+        return classificationOutput
+    }
+    
+    // Returns the final outputs of the network
+    func outputsFromNetworkOnInstance(instance:RNNInstance) -> [Double]
+    {
+        var outputVector = [Double]()
+        
+        for neuron in unfoldedNeurons
+        {
+            var output:Double = 0.0
+            switch neuron.type
+            {
+                
+                // Bias Neuron
+            case .Bias:
+                output = 1.0
+                // Input Neuron
+            case .Input:
+                output = instance.inputs[neuron.k][neuron.foldedIndex]
+                // Output, Hidden Neuron
+            default:
+                
+                var net:Double = 0.0
+                
+                let endIndex = neuron.unfoldedIndex
+                for startIndex:Int in self.neuronsConnectedToNeuron(endIndex)
+                {
+                    if let w:Double = unfoldedWeights[startIndex]![endIndex]
+                    {
+                        let o:Double = outputs[startIndex]
+                        net += w*o
+                    }
+                }
+                
+                output = self.sigmoidActivation(net)
+            }
+            
+            outputs[neuron.unfoldedIndex] = output
+            
+            // Check to make sure this is the FINAL group of outputs (not an intermediate group in another block)
+            if (neuron.k == 0 && neuron.type == .Output)
+            {
+                outputVector.append(output)
+            }
+        }
+        
+        return outputVector
     }
 }
