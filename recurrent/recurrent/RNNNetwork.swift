@@ -14,6 +14,12 @@ struct RNNDelayedWeight
     var delay:Int
 }
 
+struct RNNWeightIndexPair
+{
+    var startIndex:Int
+    var endIndex:Int
+}
+
 extension String {
     var doubleValue: Double {
         return (self as NSString).doubleValue
@@ -33,6 +39,8 @@ public class RNNNetwork
     var unfoldedWeights = [Int:[Int:Double]]()
     
     var numberOfBlocks = 0
+    
+    var learningRate:Double = 0.1
     
     // Training
     var outputs = [Double]()
@@ -251,6 +259,23 @@ public class RNNNetwork
     // Information
     //////////////////////////////
     
+    func unfoldedWeightPairsForFoldedWeight(fromFoldedIndex:Int, toFoldedIndex:Int, foldedWeight:RNNDelayedWeight) -> [RNNWeightIndexPair]
+    {
+        var unfoldedWeightPairs = [RNNWeightIndexPair]()
+        let delay = foldedWeight.delay
+        
+        for endBlockIndex in 0...(numberOfBlocks-1-delay)
+        {
+            let startBlockIndex = endBlockIndex+delay
+            let fromUnfoldedIndex = self.unfoldedIndexForFoldedIndex(fromFoldedIndex, blockIndex:startBlockIndex)
+            let toUnfoldedIndex = self.unfoldedIndexForFoldedIndex(toFoldedIndex, blockIndex:endBlockIndex)
+            
+            unfoldedWeightPairs.append(RNNWeightIndexPair(startIndex:fromUnfoldedIndex, endIndex:toUnfoldedIndex))
+        }
+        
+        return unfoldedWeightPairs
+    }
+    
     func unfoldedIndexForFoldedIndex(foldedIndex:Int, blockIndex:Int) -> Int
     {
         return ((numberOfBlocks - 1 - blockIndex)*foldedNeurons.count)+foldedIndex
@@ -320,11 +345,13 @@ public class RNNNetwork
         {
             self.trainNetworkOnInstance(instance)
             totalInstancesTrained++
-            
-            println("instances trained: \(totalInstancesTrained)")
+
+            println("unfoldedWeights: \(unfoldedWeights[0]![2])")
         }
         
         epochs++
+        
+        println("epoch complete")
     }
     
     func trainNetworkOnInstance(instance:RNNInstance)
@@ -332,6 +359,7 @@ public class RNNNetwork
         self.calculateOutputs(instance)
         self.calculateDeltas(instance)
         self.calculateWeightDeltas()
+        self.applyWeightChanges()
     }
     
     func calculateOutputs(instance:RNNInstance)
@@ -363,10 +391,10 @@ public class RNNNetwork
                     }
                 }
                 
-                output = net
+                output = self.sigmoidActivation(net)
             }
             
-            outputs[neuron.unfoldedIndex] = self.sigmoidActivation(output)
+            outputs[neuron.unfoldedIndex] = output
         }
     }
     
@@ -418,8 +446,43 @@ public class RNNNetwork
             for (endIndex:Int, weight_ab:Double) in unfoldedWeights[startIndex]!
             {
                 let output_a = outputs[startIndex]
+                let delta_b = deltas[endIndex]
                 
-                weightDeltas[startIndex]![endIndex] = output_a*weight_ab
+                // NOT weight_ab, but DELTA
+                weightDeltas[startIndex]![endIndex] = learningRate*output_a*delta_b
+            }
+        }
+    }
+    
+    // Alternative - store the foldedWeightIndex (0...n) at the beginning
+    
+    // O(F
+    func applyWeightChanges()
+    {
+        for (fromFoldedIndex:Int, delayedWeightsFromA:[Int:[RNNDelayedWeight]]) in foldedWeights
+        {
+            for (toFoldedIndex:Int, delayedWeightsFromAToB:[RNNDelayedWeight]) in delayedWeightsFromA
+            {
+                // for every folded weight
+                for delayedWeight:RNNDelayedWeight in delayedWeightsFromAToB
+                {
+                    // sum up the values of all the weight deltas from the corresponding unfolded weights
+                    var unfoldedWeightPair = self.unfoldedWeightPairsForFoldedWeight(fromFoldedIndex, toFoldedIndex:toFoldedIndex, foldedWeight:delayedWeight)
+                    
+                    var accumulatedWeightDelta:Double = 0.0
+                    for unfoldedWeightPair:RNNWeightIndexPair in unfoldedWeightPair
+                    {
+                        if let weightDelta:Double = weightDeltas[unfoldedWeightPair.startIndex]![unfoldedWeightPair.endIndex]
+                        {
+                            accumulatedWeightDelta += weightDelta
+                        }
+                    }
+                    
+                    for unfoldedWeightPair:RNNWeightIndexPair in unfoldedWeightPair
+                    {
+                        unfoldedWeights[unfoldedWeightPair.startIndex]![unfoldedWeightPair.endIndex]! += accumulatedWeightDelta
+                    }
+                }
             }
         }
     }
