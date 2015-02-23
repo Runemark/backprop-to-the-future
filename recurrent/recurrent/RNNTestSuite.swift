@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AppKit
 
 class RNNTestSuite
 {
@@ -29,6 +30,9 @@ class RNNTestSuite
     
     func launchTestSuite()
     {
+        
+        
+        
         var networkIndex = 2
         for network in networksInSuite
         {
@@ -43,6 +47,10 @@ class RNNTestSuite
                 {
                     println("\(accuracy)")
                 }
+                
+                // Play a glass sound after each experiment completes
+                var sound = NSSound(named:"Glass")
+                sound?.play()
             }
             
             networkIndex++
