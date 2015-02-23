@@ -32,6 +32,10 @@ extension String {
 
 public class RNNNetwork
 {
+    // Initialization
+    var neuronString:String
+    var weightStrings:[String]
+    
     var foldedNeurons = [RNNNeuron]()
     var foldedWeights = [Int:[Int:[RNNDelayedWeight]]]()
     
@@ -49,8 +53,28 @@ public class RNNNetwork
     
     public init(neuronString:String, weightStrings:[String])
     {
+        self.neuronString = neuronString
+        self.weightStrings = weightStrings
+        
+        self.resetNetwork()
+    }
+    
+    func resetNetwork()
+    {
         // Neuron String Format: number of nodes on each layer, separated by a colon "2:3:4:2"
         // Weight String Format: ["0-1|0.12:1", "1-1|0.5:0"]
+        
+        ////////////////////////////////////////////////////////////
+        // Clear out any pre-existing data
+        foldedNeurons.removeAll()
+        foldedWeights.removeAll()
+        
+        unfoldedNeurons.removeAll()
+        unfoldedWeights.removeAll()
+        
+        outputs.removeAll()
+        deltas.removeAll()
+        weightDeltas.removeAll()
         
         ////////////////////////////////////////////////////////////
         // Populate the folded network (foldedNeurons, foldedWeights)
@@ -343,11 +367,13 @@ public class RNNNetwork
         var epochs = 0
         var previousAccuracy = 0.0
         var epochsSinceLastAccuracyChange = 0
-        var noChangeToleranceThreshold = 200
-        var totalEpochsThreshold = 1000
+        var noChangeToleranceThreshold = 150
+        var totalEpochsThreshold = 500
         
         // Terminate if stopping conditions are met (too long without change, total epoch exceeds bounds, already at 100% accuracy)
-        while (epochsSinceLastAccuracyChange < noChangeToleranceThreshold && epochs < totalEpochsThreshold && previousAccuracy < 1.0)
+        
+        // Extra stopping conditions: epochsSinceLastAccuracyChange < noChangeToleranceThreshold &&
+        while (epochs < totalEpochsThreshold && previousAccuracy < 1.0)
         {
             var totalInstancesTrained:Int = 0
             
@@ -367,7 +393,10 @@ public class RNNNetwork
             else
             {
                 epochsSinceLastAccuracyChange = 0
+                println("accuracy change: \(accuracy)")
             }
+            
+            previousAccuracy = accuracy
             
             epochs++
         }

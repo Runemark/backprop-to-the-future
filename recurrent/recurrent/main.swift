@@ -12,29 +12,10 @@ import Foundation
 
 var network2:RNNNetwork = RNNNetwork.init(neuronString:"1:2:1", weightStrings:["0-2|?:0", "0-3|?:0", "1-2|?:0", "1-3|?:0", "2-5|?:0", "3-5|?:0", "4-5|?:0", "2-2|?:1", "3-3|?:1"])
 
-var network3:RNNNetwork = RNNNetwork.init(neuronString:"1:3:1", weightStrings:["0-2|?:0", "0-3|?:0", "1-2|?:0", "1-3|?:0", "2-5|?:0", "3-5|?:0", "4-5|?:0", "2-2|?:1", "3-3|?:1"])
+var network3:RNNNetwork = RNNNetwork.init(neuronString:"1:3:1", weightStrings:["0-2|?:0", "0-3|?:0", "0-4|?:0", "1-2|?:0", "1-3|?:0", "1-4|?:0", "2-6|?:0", "3-6|?:0", "4-6|?:1", "5-6|?:0", "2-2|?:1", "3-3|?:1", "4-4|?:1"])
 
-// 5
-// 2 3 4
-// 0 1
+var testSuite = RNNTestSuite(networks:[network2, network3])
+testSuite.launchTestSuite()
 
-var networks = [RNNNetwork]()
-networks.append(network2)
-networks.append(network3)
-
-var generator = ParityGenerator()
-var trainingSet = generator.generateInstances(750, desiredParity:[0,1])
-var testSet = generator.generateInstances(100, desiredParity:[0,1])
-
-for network in networks
-{
-    var accuracyOverTime = network.trainNetworkOnDataset(trainingSet, testSet:testSet)
-    println("Initiating Network Training...")
-    for accuracy in accuracyOverTime
-    {
-        println("\(accuracy)")
-    }
-}
-
-println("Hello, World!")
+println("All Tasks Completed")
 

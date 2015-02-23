@@ -12,6 +12,7 @@
 		5B6EFCF11A98CEFF00AE6E33 /* RNNNeuron.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6EFCF01A98CEFF00AE6E33 /* RNNNeuron.swift */; };
 		5B6EFCF31A98CF1500AE6E33 /* RNNInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6EFCF21A98CF1500AE6E33 /* RNNInstance.swift */; };
 		5BA9FD991A9A2C02007E68DD /* ParityGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA9FD981A9A2C02007E68DD /* ParityGenerator.swift */; };
+		5BCC79AE1A9B8C2100408AA7 /* RNNTestSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCC79AD1A9B8C2100408AA7 /* RNNTestSuite.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,6 +34,7 @@
 		5B6EFCF01A98CEFF00AE6E33 /* RNNNeuron.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RNNNeuron.swift; sourceTree = "<group>"; };
 		5B6EFCF21A98CF1500AE6E33 /* RNNInstance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RNNInstance.swift; sourceTree = "<group>"; };
 		5BA9FD981A9A2C02007E68DD /* ParityGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ParityGenerator.swift; sourceTree = "<group>"; };
+		5BCC79AD1A9B8C2100408AA7 /* RNNTestSuite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RNNTestSuite.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				5B6EFCE61A98CEAB00AE6E33 /* main.swift */,
+				5BCC79AD1A9B8C2100408AA7 /* RNNTestSuite.swift */,
 				5B6EFCEE1A98CEF700AE6E33 /* RNNNetwork.swift */,
 				5B6EFCF01A98CEFF00AE6E33 /* RNNNeuron.swift */,
 				5B6EFCF21A98CF1500AE6E33 /* RNNInstance.swift */,
@@ -140,6 +143,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5B6EFCE71A98CEAB00AE6E33 /* main.swift in Sources */,
+				5BCC79AE1A9B8C2100408AA7 /* RNNTestSuite.swift in Sources */,
 				5B6EFCEF1A98CEF700AE6E33 /* RNNNetwork.swift in Sources */,
 				5B6EFCF11A98CEFF00AE6E33 /* RNNNeuron.swift in Sources */,
 				5B6EFCF31A98CF1500AE6E33 /* RNNInstance.swift in Sources */,
