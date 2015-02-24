@@ -33,7 +33,7 @@ class RNNTestSuite
             networksInSuite.append(network)
         }
         
-        trainingSet = generator.generateInstances(500, desiredParity:dparity, desiredDepth:desiredDepth)
+        trainingSet = generator.generateInstances(50, desiredParity:dparity, desiredDepth:desiredDepth)
         testSet = generator.generateInstances(100, desiredParity:dparity, desiredDepth:desiredDepth)
     }
     

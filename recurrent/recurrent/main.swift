@@ -31,7 +31,7 @@ var network22:RNNNetwork = RNNNetwork.init(neuronString:"1:2:2:1", weightStrings
 
 // dparity: the inputs to be considered when generating outputs
 // desired depth: how far back to actual ly look in the training instance (2 will look at t, t-1, t-2) (0 will look only at t)
-var testSuite = RNNTestSuite(networks:[network5, network6, network7], dparity:[0,1,2], desiredDepth:2)
+var testSuite = RNNTestSuite(networks:[network4, network5, network6], dparity:[0,1,2], desiredDepth:2)
 testSuite.launchTestSuite()
 
 println("All Tasks Completed")
