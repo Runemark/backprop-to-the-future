@@ -17,31 +17,39 @@ class RNNTestSuite
     var trainingSet:[RNNInstance]
     var testSet:[RNNInstance]
     
-    init(networks:[RNNNetwork])
+    var repeatLimit = 1
+    
+    var maxParityDepth = 0
+    var desiredDepth = 0
+    var dparity:[Int]
+    
+    init(networks:[RNNNetwork], dparity:[Int], desiredDepth:Int)
     {
+        self.desiredDepth = desiredDepth
+        self.dparity = dparity
+        
         for network in networks
         {
             networksInSuite.append(network)
         }
         
-        trainingSet = generator.generateInstances(500, desiredParity:[0,1])
-        testSet = generator.generateInstances(100, desiredParity:[0,1])
+        trainingSet = generator.generateInstances(500, desiredParity:dparity, desiredDepth:desiredDepth)
+        testSet = generator.generateInstances(100, desiredParity:dparity, desiredDepth:desiredDepth)
     }
     
     func launchTestSuite()
     {
+        self.maxParityDepth = max(dparity)
         
-        
-        
-        var networkIndex = 2
+        var networkIndex = 0
         for network in networksInSuite
         {
-            for repeatIndex in 0..<5
+            for repeatIndex in 0..<repeatLimit
             {
                 // Clears the learning accomplished so far
-                network.resetNetwork()
-                
-                println("Initiating Network Training: Network(\(networkIndex)) Attempt:(\(repeatIndex))")
+                network.resetNetwork(desiredDepth)
+            
+                println("Initiating Network Training: Network(\(network.neuronString)) Attempt:(\(repeatIndex))")
                 var accuracyOverTime = network.trainNetworkOnDataset(trainingSet, testSet:testSet)
                 for accuracy in accuracyOverTime
                 {
@@ -55,5 +63,20 @@ class RNNTestSuite
             
             networkIndex++
         }
+    }
+    
+    func max(parityItems:[Int]) -> Int
+    {
+        var max:Int = 0
+        
+        for parity in parityItems
+        {
+            if (parity > max)
+            {
+                max = parity
+            }
+        }
+        
+        return max
     }
 }

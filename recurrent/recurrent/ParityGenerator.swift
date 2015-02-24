@@ -11,21 +11,21 @@ import Foundation
 class ParityGenerator
 {
     // Parity
-    func generateInstances(dataSetSize:Int, desiredParity:[Int]) -> [RNNInstance]
+    func generateInstances(dataSetSize:Int, desiredParity:[Int], desiredDepth:Int) -> [RNNInstance]
     {
         var dataSet = [RNNInstance]()
         
         let maxParity = self.maxParityInSet(desiredParity)
         let stream = self.generateIOStream(dataSetSize, desiredParity:desiredParity)
         
-        for index in maxParity..<dataSetSize+1
+        for index in desiredDepth..<dataSetSize+1
         {
             var instanceOutput = [Double]()
             instanceOutput.append(Double(stream.outputs[index]))
             
             var instanceInputs = [[Double]]()
             
-            for timeIndex in reverse(index-maxParity...index)
+            for timeIndex in reverse(index-desiredDepth...index)
             {
                 var inputLayer = [Double]()
                 inputLayer.append(Double(stream.inputs[timeIndex]))

@@ -56,10 +56,10 @@ public class RNNNetwork
         self.neuronString = neuronString
         self.weightStrings = weightStrings
         
-        self.resetNetwork()
+        self.resetNetwork(-1)
     }
     
-    func resetNetwork()
+    func resetNetwork(forcedK:Int)
     {
         // Neuron String Format: number of nodes on each layer, separated by a colon "2:3:4:2"
         // Weight String Format: ["0-1|0.12:1", "1-1|0.5:0"]
@@ -135,7 +135,13 @@ public class RNNNetwork
         
         ////////////////////////////////////////////////////////////
         // Populate the unfolded network (unfoldedNeurons, unfoldedWeights)
-        let k = self.maxFoldedWeightDelay()
+        var k = self.maxFoldedWeightDelay()
+        
+        if (forcedK > -1)
+        {
+            k = forcedK
+        }
+        
         numberOfBlocks = k+1
         
         self.populateUnfoldedNetwork(k)
@@ -194,13 +200,16 @@ public class RNNNetwork
                 {
                     let delay = delayedWeight.delay
                     
-                    for endBlockIndex in 0...(k-delay)
+                    if (delay <= k)
                     {
-                        let startBlockIndex = endBlockIndex+delay
-                        let fromUnfoldedIndex = self.unfoldedIndexForFoldedIndex(fromFoldedIndex, blockIndex:startBlockIndex)
-                        let toUnfoldedIndex = self.unfoldedIndexForFoldedIndex(toFoldedIndex, blockIndex:endBlockIndex)
-                        
-                        self.addUnfoldedWeight(fromUnfoldedIndex, endIndex:toUnfoldedIndex, value:delayedWeight.value)
+                        for endBlockIndex in 0...(k-delay)
+                        {
+                            let startBlockIndex = endBlockIndex+delay
+                            let fromUnfoldedIndex = self.unfoldedIndexForFoldedIndex(fromFoldedIndex, blockIndex:startBlockIndex)
+                            let toUnfoldedIndex = self.unfoldedIndexForFoldedIndex(toFoldedIndex, blockIndex:endBlockIndex)
+                            
+                            self.addUnfoldedWeight(fromUnfoldedIndex, endIndex:toUnfoldedIndex, value:delayedWeight.value)
+                        }
                     }
                 }
             }
@@ -288,15 +297,18 @@ public class RNNNetwork
         var unfoldedWeightPairs = [RNNWeightIndexPair]()
         let delay = foldedWeight.delay
         
-        for endBlockIndex in 0...(numberOfBlocks-1-delay)
+        if (delay < numberOfBlocks-1)
         {
-            let startBlockIndex = endBlockIndex+delay
-            let fromUnfoldedIndex = self.unfoldedIndexForFoldedIndex(fromFoldedIndex, blockIndex:startBlockIndex)
-            let toUnfoldedIndex = self.unfoldedIndexForFoldedIndex(toFoldedIndex, blockIndex:endBlockIndex)
-            
-            unfoldedWeightPairs.append(RNNWeightIndexPair(startIndex:fromUnfoldedIndex, endIndex:toUnfoldedIndex))
+            for endBlockIndex in 0...(numberOfBlocks-1-delay)
+            {
+                let startBlockIndex = endBlockIndex+delay
+                let fromUnfoldedIndex = self.unfoldedIndexForFoldedIndex(fromFoldedIndex, blockIndex:startBlockIndex)
+                let toUnfoldedIndex = self.unfoldedIndexForFoldedIndex(toFoldedIndex, blockIndex:endBlockIndex)
+                
+                unfoldedWeightPairs.append(RNNWeightIndexPair(startIndex:fromUnfoldedIndex, endIndex:toUnfoldedIndex))
+            }
         }
-        
+    
         return unfoldedWeightPairs
     }
     
@@ -368,7 +380,7 @@ public class RNNNetwork
         var previousAccuracy = 0.0
         var epochsSinceLastAccuracyChange = 0
         var noChangeToleranceThreshold = 150
-        var totalEpochsThreshold = 500
+        var totalEpochsThreshold = 1000
         
         // Terminate if stopping conditions are met (too long without change, total epoch exceeds bounds, already at 100% accuracy)
         
@@ -393,7 +405,7 @@ public class RNNNetwork
             else
             {
                 epochsSinceLastAccuracyChange = 0
-                println("accuracy change: \(accuracy)")
+                println("accuracy change: \(accuracy) @\(epochs)")
             }
             
             previousAccuracy = accuracy
